@@ -1,6 +1,64 @@
 @LibraryManagement_HostAddress = http://localhost:5079
 
-GET {{LibraryManagement_HostAddress}}/weatherforecast/
+### Get all Books
+GET {{LibraryManagement_HostAddress}}/api/books
+Accept: application/json
+
+###
+
+### Add a Book
+POST {{LibraryManagement_HostAddress}}/api/books
+Content-Type: application/json
+
+{
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "libraryId": 1
+}
+
+###
+
+### Add a Member
+POST {{LibraryManagement_HostAddress}}/api/members
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com"
+}
+
+###
+
+### Lend a Book
+POST {{LibraryManagement_HostAddress}}/api/loans/lend
+Content-Type: application/json
+
+{
+  "bookId": 1,
+  "memberId": 1
+}
+
+###
+
+### Return a Book
+POST {{LibraryManagement_HostAddress}}/api/loans/return/1
+Accept: application/json
+
+###
+
+### Add a Library
+POST {{LibraryManagement_HostAddress}}/api/libraries
+Content-Type: application/json
+
+{
+  "name": "Central Library",
+  "address": "123 Main St"
+}
+
+###
+
+### Get all Libraries
+GET {{LibraryManagement_HostAddress}}/api/libraries
 Accept: application/json
 
 ###

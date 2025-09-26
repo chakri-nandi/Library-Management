@@ -1,4 +1,4 @@
-using LibraryManagement.Data;
+﻿using LibraryManagement.Data;
 using LibraryManagement.DTOs;
 using LibraryManagement.Entities;
 using LibraryManagement.Mapper;
@@ -22,24 +22,33 @@ builder.Services.AddScoped<ILibraryService, LibraryService>();
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(LibraryMappingProfile));
 
+
+// 🔹 Add Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
-// Books
+// 🔹 Enable Swagger middleware
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+// Endpoints
 app.MapGet("/api/books", async (ILibraryService s) => Results.Ok(await s.GetAllBooksAsync()));
 app.MapPost("/api/books", async (ILibraryService s, CreateBookDto dto) => Results.Ok(await s.AddBookAsync(dto)));
 
-// Members
 app.MapPost("/api/members", async (ILibraryService s, CreateMemberDto dto) => Results.Ok(await s.AddMemberAsync(dto)));
 
-// Loans
-app.MapPost("/api/loans/borrow", async (ILibraryService s, LendBookDto dto) => Results.Ok(await s.LendBookAsync(dto)));
+app.MapPost("/api/loans/lend", async (ILibraryService s, LendBookDto dto) => Results.Ok(await s.LendBookAsync(dto)));
 app.MapPost("/api/loans/return/{loanId:int}", async (ILibraryService s, int loanId) =>
 {
     var loan = await s.ReturnBookAsync(loanId);
     return loan is null ? Results.NotFound() : Results.Ok(loan);
 });
 
-// Libraries
 app.MapGet("/api/libraries", async (ILibraryService s) => Results.Ok(await s.GetLibrariesAsync()));
 app.MapGet("/api/libraries/{id:int}", async (ILibraryService s, int id) =>
 {
