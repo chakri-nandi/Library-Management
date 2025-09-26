@@ -1,44 +1,51 @@
+using LibraryManagement.Data;
+using LibraryManagement.DTOs;
+using LibraryManagement.Entities;
+using LibraryManagement.Mapper;
+using LibraryManagement.Services;
+using LibraryManagementSystem.Services;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddDbContext<LibraryDbContext>(opt => opt.UseInMemoryDatabase("LibraryDb"));
+
+// Register generic repositories
+builder.Services.AddScoped<IGenericRepository<Book>, GenericRepository<Book>>();
+builder.Services.AddScoped<IGenericRepository<Member>, GenericRepository<Member>>();
+builder.Services.AddScoped<IGenericRepository<Loan>, GenericRepository<Loan>>();
+builder.Services.AddScoped<IGenericRepository<Library>, GenericRepository<Library>>();
+
+// Service layer
+builder.Services.AddScoped<ILibraryService, LibraryService>();
+
+// AutoMapper
+builder.Services.AddAutoMapper(typeof(LibraryMappingProfile));
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Books
+app.MapGet("/api/books", async (ILibraryService s) => Results.Ok(await s.GetAllBooksAsync()));
+app.MapPost("/api/books", async (ILibraryService s, CreateBookDto dto) => Results.Ok(await s.AddBookAsync(dto)));
 
-app.UseHttpsRedirection();
+// Members
+app.MapPost("/api/members", async (ILibraryService s, CreateMemberDto dto) => Results.Ok(await s.AddMemberAsync(dto)));
 
-var summaries = new[]
+// Loans
+app.MapPost("/api/loans/borrow", async (ILibraryService s, LendBookDto dto) => Results.Ok(await s.LendBookAsync(dto)));
+app.MapPost("/api/loans/return/{loanId:int}", async (ILibraryService s, int loanId) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    var loan = await s.ReturnBookAsync(loanId);
+    return loan is null ? Results.NotFound() : Results.Ok(loan);
+});
 
-app.MapGet("/weatherforecast", () =>
+// Libraries
+app.MapGet("/api/libraries", async (ILibraryService s) => Results.Ok(await s.GetLibrariesAsync()));
+app.MapGet("/api/libraries/{id:int}", async (ILibraryService s, int id) =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+    var lib = await s.GetLibraryAsync(id);
+    return lib is null ? Results.NotFound() : Results.Ok(lib);
+});
+app.MapPost("/api/libraries", async (ILibraryService s, CreateLibraryDto dto) => Results.Ok(await s.AddLibraryAsync(dto)));
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
