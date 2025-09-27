@@ -1,7 +1,6 @@
 Library Management System
-A simple console-based library management system built with .NET that allows you to manage books, members, and loan transactions.
+Library management system built with .NET that allows you to manage books, members, and loan transactions.
 Features
-
 Book Management: Add, view, update, and delete books
 Member Management: Register and manage library members
 Loan System: Handle book borrowing and returning
