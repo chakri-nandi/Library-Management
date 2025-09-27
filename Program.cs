@@ -5,6 +5,7 @@ using LibraryManagement.Mapper;
 using LibraryManagement.Services;
 using LibraryManagementSystem.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +30,22 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// 🔹 Enable Swagger middleware
+// Error handling middleware
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        var error = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+
+        logger.LogError(error, "Unhandled exception occurred.");
+
+        context.Response.StatusCode = ((int)HttpStatusCode.InternalServerError);
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(ApiResponse.Fail("An unexpected error occurred."));
+    });
+});
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -37,24 +53,41 @@ if (app.Environment.IsDevelopment())
 }
 
 // Endpoints
-app.MapGet("/api/books", async (ILibraryService s) => Results.Ok(await s.GetAllBooksAsync()));
-app.MapPost("/api/books", async (ILibraryService s, CreateBookDto dto) => Results.Ok(await s.AddBookAsync(dto)));
 
-app.MapPost("/api/members", async (ILibraryService s, CreateMemberDto dto) => Results.Ok(await s.AddMemberAsync(dto)));
-
-app.MapPost("/api/loans/lend", async (ILibraryService s, LendBookDto dto) => Results.Ok(await s.LendBookAsync(dto)));
-app.MapPost("/api/loans/return/{loanId:int}", async (ILibraryService s, int loanId) =>
+app.MapGet("/api/books", async (ILibraryService service) =>
 {
-    var loan = await s.ReturnBookAsync(loanId);
-    return loan is null ? Results.NotFound() : Results.Ok(loan);
+    var books = await service.GetAllBooksAsync();
+    return Results.Ok(ApiResponse.Ok(books));
 });
 
-app.MapGet("/api/libraries", async (ILibraryService s) => Results.Ok(await s.GetLibrariesAsync()));
-app.MapGet("/api/libraries/{id:int}", async (ILibraryService s, int id) =>
+app.MapPost("/api/books", async (CreateBookDto dto, ILibraryService service) =>
 {
-    var lib = await s.GetLibraryAsync(id);
-    return lib is null ? Results.NotFound() : Results.Ok(lib);
+    var book = await service.AddBookAsync(dto);
+    return Results.Ok(ApiResponse.Ok(book));
 });
-app.MapPost("/api/libraries", async (ILibraryService s, CreateLibraryDto dto) => Results.Ok(await s.AddLibraryAsync(dto)));
+
+app.MapPost("/api/members", async (CreateMemberDto dto, ILibraryService service) =>
+{
+    var member = await service.AddMemberAsync(dto);
+    return Results.Ok(ApiResponse.Ok(member));
+});
+
+app.MapPost("/api/loans/lend", async (LendBookDto dto, ILibraryService service) =>
+{
+    var loan = await service.LendBookAsync(dto);
+    return Results.Ok(ApiResponse.Ok(loan));
+});
+
+app.MapPost("/api/loans/return/{loanId:int}", async (int loanId, ILibraryService service) =>
+{
+    var result = await service.ReturnBookAsync(loanId);
+    return Results.Ok(ApiResponse.Ok(result));
+});
+
+app.MapPost("/api/libraries", async (CreateLibraryDto dto, ILibraryService service) =>
+{
+    var library = await service.AddLibraryAsync(dto);
+    return Results.Ok(ApiResponse.Ok(library));
+});
 
 app.Run();

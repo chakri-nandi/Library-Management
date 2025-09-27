@@ -9,7 +9,7 @@ public record MemberDto(int Id, string Name, string Email);
 public record CreateMemberDto(string Name, string Email);
 
 // Loans
-public record LoanDto(int Id, int BookId, int MemberId, DateTime BorrowedAt, DateTime? ReturnedAt);
+public record LoanDto(int Id, int BookId, int MemberId, DateTime LendAt, DateTime? ReturnedAt);
 public record LendBookDto(int BookId, int MemberId);
 
 // Libraries

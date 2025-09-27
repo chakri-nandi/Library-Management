@@ -1,6 +1,4 @@
-﻿using LibraryManagement.Entities;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Data
 {

@@ -12,7 +12,6 @@ namespace LibraryManagement.Services
         Task<LoanDto> LendBookAsync(LendBookDto dto);
         Task<LoanDto?> ReturnBookAsync(int loanId);
 
-        // Library operations
         Task<LibraryDto> AddLibraryAsync(CreateLibraryDto dto);
         Task<IEnumerable<LibraryDto>> GetLibrariesAsync();
         Task<LibraryDto?> GetLibraryAsync(int id);
