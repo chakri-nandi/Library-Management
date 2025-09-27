@@ -6,7 +6,7 @@ Book Management: Add, view, update, and delete books
 Member Management: Register and manage library members
 Loan System: Handle book borrowing and returning
 Data Persistence: Uses Entity Framework Core for data storage
-Clean Architecture: Implements Repository and Unit of Work patterns
+Clean Architecture: Implements Repository pattern
 
 Project Structure
 LibraryManagementSystem/
@@ -14,8 +14,6 @@ LibraryManagementSystem/
 │   ├── LibraryDbContext.cs     # Database context
 │   ├── IGenericRepository.cs   # Generic repository interface
 │   ├── GenericRepository.cs    # Generic repository implementation
-│   ├── IUnitOfWork.cs         # Unit of Work interface
-│   └── UnitOfWork.cs          # Unit of Work implementation
 ├── DTOs/                   # Data Transfer Objects
 │   ├── BookDto.cs             # Book data transfer object
 │   ├── MemberDto.cs           # Member data transfer object
